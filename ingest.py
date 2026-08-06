@@ -1,4 +1,5 @@
 from minsearch import Index
+import pandas as pd
 
 TEXT_FIELDS = [
     "condition_normalized",
@@ -29,11 +30,24 @@ KEYWORD_FIELDS = [
     "do_not_generate_dose",
 ]
 
-def build_text_index(documents):
+
+def load_data():
+    df = pd.read_csv("natural_remedies.csv")
+
+    # Remove an old CSV index column, if present
+    df = df.drop(columns=["index"], errors="ignore")
+
+    # Minsearch text fields should not contain NaN values
+    df = df.fillna("")
+
+    return df.to_dict(orient="records")
+
+def build_index(documents):
     index = Index(
         text_fields=TEXT_FIELDS,
         keyword_fields=KEYWORD_FIELDS,
     )
 
     index.fit(documents)
+
     return index
