@@ -28,7 +28,8 @@ venv install
 
 ## Evaluation
 
-For the code for evaluating the system, you can check: 
+For the code for evaluating the system, you can check the [notebooks/rag-test.ipynb](notebooks/notebook.ipynb)
+
 ### Retreival
 
 ### RAG Flow
