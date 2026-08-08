@@ -46,11 +46,13 @@ vector             {'hit_rate': 0.915, 'mrr': 0.606145833333333}
 hybrid (default)   {'hit_rate': 0.9633333333333334, 'mrr': 0.6305208333333339}
 hybrid (tuned)     {'hit_rate': 0.9458333333333333, 'mrr': 0.6322638888888894}
 
+The hybrid search wins with or without boosting.
+
 
 ### RAG Flow
 
 For the code of RAG flow, you can check the [notebooks/consultant.py](notebooks/consultant.py) and use 'make run' command directly in the terminal.
 
-## Monictoring
+## Monitoring
 
 ## Ingestion
