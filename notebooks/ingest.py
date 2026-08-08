@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from minsearch import Index
 import pandas as pd
 
@@ -32,7 +34,10 @@ KEYWORD_FIELDS = [
 
 
 def load_data():
-    df = pd.read_csv("natural_remedies.csv")
+    project_root = Path(__file__).resolve().parents[1]
+    csv_path = project_root / "data" / "natural_remedies.csv"
+
+    df = pd.read_csv(csv_path)
 
     # Remove an old CSV index column, if present
     df = df.drop(columns=["index"], errors="ignore")

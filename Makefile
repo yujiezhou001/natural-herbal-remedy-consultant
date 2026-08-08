@@ -1,4 +1,4 @@
 
 
 make run:
-	uv run python consultant.py
+	uv run python notebooks/consultant.py
