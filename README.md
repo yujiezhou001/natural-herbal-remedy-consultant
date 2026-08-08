@@ -28,16 +28,28 @@ venv install
 
 ## Evaluation
 
-For the code for evaluating the system, you can check the [notebooks/rag-test.ipynb](notebooks/notebook.ipynb)
+For the code for evaluating the system, you can check the [notebooks/notebook.ipynb](notebooks/notebook.ipynb)
 
 ### Retreival
 
-The basic approach - using minsearch without any boostong - gave the following metrics:
+- using minsearch without any boosting - gave the following metrics:
 
-hit_rate:
-MRR: 
+text {'hit_rate': 0.944, 'mrr': 0.5907800000000012}
+vector {'hit_rate': 0.9172, 'mrr': 0.6094866666666657}
+hybrid {'hit_rate': 0.9648, 'mrr': 0.6329333333333339}
+
+- using minsearch and hyperopt with boosting - gave the following metrics:
+
+text (untuned)     {'hit_rate': 0.9420833333333334, 'mrr': 0.5909375000000011}
+text (boosted)     {'hit_rate': 0.9454166666666667, 'mrr': 0.6158125000000004}
+vector             {'hit_rate': 0.915, 'mrr': 0.606145833333333}
+hybrid (default)   {'hit_rate': 0.9633333333333334, 'mrr': 0.6305208333333339}
+hybrid (tuned)     {'hit_rate': 0.9458333333333333, 'mrr': 0.6322638888888894}
+
 
 ### RAG Flow
+
+For the code of RAG flow, you can check the [notebooks/consultant.py](notebooks/consultant.py) and use 'make run' command directly in the terminal.
 
 ## Monictoring
 
