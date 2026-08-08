@@ -3,13 +3,19 @@ name = "natural-herbal-remedy-consultant"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
+    "gitsource>=0.0.5",
     "jupyter>=1.1.1",
     "minsearch>=0.0.8",
+    "numpy>=2.2.6",
+    "onnxruntime>=1.20.1",
     "openai>=2.48.0",
+    "pandas>=2.3.3",
+    "pydantic>=2.13.4",
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
+    "tokenizers>=0.21.4",
 ]
 
 [project.scripts]
@@ -18,3 +24,9 @@ natural-herbal-remedy-consultant = "natural_herbal_remedy_consultant:main"
 [build-system]
 requires = ["uv_build>=0.12.2,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "huggingface-hub>=1.27.0",
+    "jupyter>=1.1.1",
+]

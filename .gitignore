@@ -1,3 +1,5 @@
 .venv
 uv.lock
 .env
+/notebooks/models
+/notebooks/__pycache__

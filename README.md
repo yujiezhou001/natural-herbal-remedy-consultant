@@ -32,6 +32,11 @@ For the code for evaluating the system, you can check the [notebooks/rag-test.ip
 
 ### Retreival
 
+The basic approach - using minsearch without any boostong - gave the following metrics:
+
+hit_rate:
+MRR: 
+
 ### RAG Flow
 
 ## Monictoring
