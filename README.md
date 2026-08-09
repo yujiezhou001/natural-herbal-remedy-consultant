@@ -26,6 +26,10 @@ Installing the dependencies:
 venv install
 ```
 
+## Retrieval Flow
+
+For the code of Retrieval flow, you can check the [notebooks/consultant.py](notebooks/consultant.py) and use 'make run' command directly in the terminal.
+
 ## Evaluation
 
 For the code for evaluating the system, you can check the [notebooks/notebook.ipynb](notebooks/notebook.ipynb)
@@ -51,7 +55,21 @@ The hybrid search wins with or without boosting.
 
 ### RAG Flow
 
-For the code of RAG flow, you can check the [notebooks/consultant.py](notebooks/consultant.py) and use 'make run' command directly in the terminal.
+We used the LLM-as-a-judge metric to evaluate the quality of our RAG flow.
+
+We chose to use our best-performing retrieval approach concluded from retrieval evaluation, which is Hybrid Search for RAG.
+
+Since we have over 2000 records, running all of them is quite costly, so we decided to sample 200 questions and tested on two models: gpt-5.4-mini and gpt-5.4-nano.
+
+For gpt-5.4-mini, among 200 records, we had:
+
+195 (97.50%) Good
+5   (2.5%)   Bad
+
+For gpt-5.4-nano, among 200 records, we had:
+
+193 (96.50%) Good
+7   (3.5%)   Bad
 
 ## Monitoring
 
