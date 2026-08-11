@@ -22,7 +22,9 @@ class LLMCallRecord:
 def calculate_cost(model, usage):
     cost = 0
     if "gpt-5.4-mini" in model:
-        cost = (usage.input_tokens * 0.15 + usage.output_tokens * 0.60) / 1_000_000
+        cost = (usage.input_tokens * 0.75 + usage.output_tokens * 4.50) / 1_000_000
+    elif "gpt-5.4-nano" in model:
+        cost = (usage.input_tokens * 0.20 + usage.output_tokens * 1.25) / 1_000_000
     return cost
 
 

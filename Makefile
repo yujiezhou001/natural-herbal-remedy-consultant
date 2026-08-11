@@ -7,7 +7,7 @@ ingest:
 	cd natural_remedy_consultant && uv run python auto_data_ingestion.py
 
 chat:
-	uv run streamlit run app.py
+	uv run streamlit run natural_remedy_consultant/app.py
 
 network:
 	docker network create monitoring
