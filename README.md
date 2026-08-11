@@ -10,9 +10,17 @@ This project addresses that problem by building a Retrieval-Augmented Generation
 
 The assistant is intended for educational and research purposes and not as a replacement for professional medical diagnosis or treatment.
 
+## Technologies
+
+* [Minsearch](https://github.com/alexeygrigorev/minsearch) - for searching
+* OpenAI as an LLM
+* Streamlit as the web interface (see [Background](#background) for more information)
+
 ## Running it
 
-we use venv for managing dependencies and Python 3.9.
+### Installing the dependencies
+
+We use [uv](https://docs.astral.sh/uv/) for managing dependencies, with Python 3.12.
 
 Make sure you have uv installed:
 
@@ -23,8 +31,51 @@ pip install uv
 Installing the dependencies:
 
 ```bash
-venv install
+uv sync
 ```
+
+### Configuration
+
+The application uses OpenAI as the LLM provider. Put your API key in a `.env` file in the project root:
+
+```
+OPENAI_API_KEY=your-key-here
+```
+
+### Running the application
+
+First, ingest the knowledge base (see [Ingestion](#ingestion) for details):
+
+```bash
+make ingest
+```
+
+Then start the Streamlit application:
+
+```bash
+make chat
+```
+
+and open http://localhost:8501 in your browser.
+
+You can also ask a one-off question from the command line, without the UI:
+
+```bash
+make run
+```
+
+or with your own question:
+
+```bash
+uv run python natural_remedy_consultant/assistant.py "What herbs may help with nausea?"
+```
+
+## Interface
+
+The application has two interfaces:
+
+- **Web UI (Streamlit)** — a chat interface for interactive use ([natural_remedy_consultant/app.py](natural_remedy_consultant/app.py)), started with `make chat`. You ask questions in natural language and get answers grounded in the knowledge base. The conversation history is kept for the browser session, and the knowledge-base index is built once at startup and cached across interactions.
+- **Command line** — one-off questions through [natural_remedy_consultant/assistant.py](natural_remedy_consultant/assistant.py), run with `make run`. Useful for quick checks and scripting.
 
 ## Retrieval Flow
 
@@ -74,6 +125,19 @@ For gpt-5.4-nano, among 200 records, we had:
 7   (3.5%)   Bad
 
 ## Monitoring
+
+## Background
+
+Here we provide background on some of the technologies used, and why we chose them for this project.
+
+### Streamlit
+
+[Streamlit](https://streamlit.io/) is an open-source Python framework for building web applications without writing any frontend code — the entire UI is declared in Python. We chose it for the chat interface because it keeps the whole project in one language and turns the RAG pipeline into a usable web app in under 50 lines of code.
+
+Two Streamlit concepts worth knowing when reading [app.py](natural_remedy_consultant/app.py):
+
+- **Rerun model** — Streamlit re-executes the whole script from top to bottom on every user interaction. Anything expensive must therefore be cached: we wrap `create_assistant()` (which loads the knowledge base and builds the search index) in `@st.cache_resource`, so it runs once per server process instead of on every message.
+- **Session state** — `st.session_state` survives reruns, so the chat history is stored there and replayed at the top of each rerun, which is what produces the chat experience.
 
 ## Ingestion
 
