@@ -28,7 +28,9 @@ venv install
 
 ## Retrieval Flow
 
-For the code of Retrieval flow, you can check the [notebooks/consultant.py](notebooks/consultant.py) and use 'make run' command directly in the terminal.
+For the code of the Retrieval flow, you can check the [notebooks/consultant.py](notebooks/consultant.py).
+
+The packaged application version lives in [natural_remedy_consultant/assistant.py](natural_remedy_consultant/assistant.py) (the app is built on top of it) — run it with the 'make run' command directly in the terminal.
 
 ## Evaluation
 
@@ -74,3 +76,27 @@ For gpt-5.4-nano, among 200 records, we had:
 ## Monitoring
 
 ## Ingestion
+
+The knowledge base is ingested with an automated [Prefect](https://www.prefect.io/) pipeline: [natural_remedy_consultant/auto_data_ingestion.py](natural_remedy_consultant/auto_data_ingestion.py)
+
+The flow `natural-remedy-kb-ingestion` runs five tasks:
+
+1. **extract** — reads the raw dataset `data/natural_remedies.csv`, with automatic retries on failure
+2. **validate** — verifies that all columns required by the search index are present, rejects records without a `record_id`, and drops duplicate records
+3. **transform** — cleans the data (removes stale index columns, fills missing values)
+4. **load** — publishes the processed knowledge base to `data/knowledge_base.csv`
+5. **smoke_test** — builds the minsearch index from the published file and runs a test query, so a broken knowledge base can never be silently published
+
+The application ([natural_remedy_consultant/ingest.py](natural_remedy_consultant/ingest.py)) loads the `data/knowledge_base.csv` produced by this pipeline, falling back to the raw CSV if the pipeline has not been run yet.
+
+To run the ingestion pipeline:
+
+```bash
+make ingest
+```
+
+or directly:
+
+```bash
+cd natural_remedy_consultant && uv run python auto_data_ingestion.py
+```
