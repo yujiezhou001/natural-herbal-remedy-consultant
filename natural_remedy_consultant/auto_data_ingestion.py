@@ -13,13 +13,13 @@ from pathlib import Path
 import pandas as pd
 from prefect import flow, task, get_run_logger
 
-from ingest import TEXT_FIELDS, KEYWORD_FIELDS, build_index
+from ingest import TEXT_FIELDS, KEYWORD_FIELDS, build_index, prepare_documents
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_CSV = PROJECT_ROOT / "data" / "natural_remedies.csv"
 KB_CSV = PROJECT_ROOT / "data" / "knowledge_base.csv"
 
-REQUIRED_COLUMNS = set(TEXT_FIELDS) | set(KEYWORD_FIELDS)
+REQUIRED_COLUMNS = set(TEXT_FIELDS) | set(KEYWORD_FIELDS) | {"retrieval_text"}
 
 
 @task(retries=2, retry_delay_seconds=5)
@@ -79,7 +79,10 @@ def load(df: pd.DataFrame, kb_path: Path) -> Path:
 def smoke_test(kb_path: Path) -> None:
     logger = get_run_logger()
 
-    documents = pd.read_csv(kb_path).fillna("").to_dict(orient="records")
+    # Builds the full hybrid index (text + vector); this also downloads the
+    # embedding model if missing and pre-computes the embeddings cache,
+    # so the app starts fast afterwards
+    documents = prepare_documents(pd.read_csv(kb_path))
     index = build_index(documents)
 
     results = index.search("ginger for nausea", num_results=3)

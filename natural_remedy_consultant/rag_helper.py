@@ -61,35 +61,9 @@ class RAGBase:
         self.model = model
 
     def search(self, query, num_results=5):
-        boost_dict = {
-            'condition_normalized': 5.0,
-            'condition_or_use_case': 4.0,
-            'symptom_tags': 4.0,
-            'herb_name_en': 3.0,
-            'herb_name_zh': 3.0,
-            'pinyin': 2.0,
-            'botanical_name': 2.0,
-            'remedy_summary': 3.0,
-            'traditional_role': 2.0,
-            'traditional_pattern': 2.0,
-            'modern_evidence_summary': 2.5,
-            'preparation_example': 1.0,
-            'adverse_effects': 1.0,
-            'contraindications_and_cautions': 1.5,
-            'key_drug_interactions': 1.5
-        }
-
-        filter_dict = {}
-
-        if self.record_type is not None:
-            filter_dict['record_type'] = self.record_type
-
-        return self.index.search(
-            query,
-            num_results=num_results,
-            boost_dict=boost_dict,
-            filter_dict=filter_dict
-        )
+        # The index is a HybridSearcher (text + vector search with RRF),
+        # the best-performing retriever from the retrieval evaluation
+        return self.index.search(query, num_results=num_results)
 
     def build_context(self, search_results):
         lines = []

@@ -3,3 +3,6 @@ uv.lock
 .env
 /notebooks/models
 /notebooks/__pycache__
+/natural_remedy_consultant/models
+/natural_remedy_consultant/__pycache__
+/data/embeddings.npy

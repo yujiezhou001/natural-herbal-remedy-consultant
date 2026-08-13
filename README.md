@@ -12,7 +12,8 @@ The assistant is intended for educational and research purposes and not as a rep
 
 ## Technologies
 
-* [Minsearch](https://github.com/alexeygrigorev/minsearch) - for searching
+* [Minsearch](https://github.com/alexeygrigorev/minsearch) - for text and vector search
+* all-MiniLM-L6-v2 (ONNX, run locally) - for embedding the records and queries used by vector search
 * OpenAI as an LLM
 * Streamlit as the web interface (see [Background](#background) for more information)
 
@@ -83,6 +84,8 @@ For the code of the Retrieval flow, you can check the [notebooks/consultant.py](
 
 The packaged application version lives in [natural_remedy_consultant/assistant.py](natural_remedy_consultant/assistant.py) (the app is built on top of it) — run it with the 'make run' command directly in the terminal.
 
+The application uses **hybrid search** (text search + vector search fused with Reciprocal Rank Fusion), the best-performing retriever from our retrieval evaluation — see [natural_remedy_consultant/ingest.py](natural_remedy_consultant/ingest.py). The app's retriever scores the same as the notebook winner on the ground-truth test set: hit_rate 0.963, MRR 0.631.
+
 ## Evaluation
 
 For the code for evaluating the system, you can check the [notebooks/notebook.ipynb](notebooks/notebook.ipynb)
@@ -149,7 +152,7 @@ The flow `natural-remedy-kb-ingestion` runs five tasks:
 2. **validate** — verifies that all columns required by the search index are present, rejects records without a `record_id`, and drops duplicate records
 3. **transform** — cleans the data (removes stale index columns, fills missing values)
 4. **load** — publishes the processed knowledge base to `data/knowledge_base.csv`
-5. **smoke_test** — builds the minsearch index from the published file and runs a test query, so a broken knowledge base can never be silently published
+5. **smoke_test** — builds the full hybrid index (text + vector) from the published file and runs a test query, so a broken knowledge base can never be silently published. This also downloads the embedding model if missing and pre-computes the embeddings cache (`data/embeddings.npy`), so the app starts fast afterwards
 
 The application ([natural_remedy_consultant/ingest.py](natural_remedy_consultant/ingest.py)) loads the `data/knowledge_base.csv` produced by this pipeline, falling back to the raw CSV if the pipeline has not been run yet.
 
