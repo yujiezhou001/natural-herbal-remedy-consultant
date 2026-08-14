@@ -17,9 +17,18 @@ The assistant is intended for educational and research purposes and not as a rep
 * OpenAI as an LLM
 * Streamlit as the web interface (see [Background](#background) for more information)
 
-## Running it
+## Running it with Docker
+
+The easiest way to run this application is with docker
+```bash
+docker-compose up
+```
+
+## Running Locally
 
 ### Installing the dependencies
+
+If you don't use docker and want to run locally, you need to manually prepare the environments and install all the dependencies
 
 We use [uv](https://docs.astral.sh/uv/) for managing dependencies, with Python 3.12.
 
@@ -44,6 +53,8 @@ OPENAI_API_KEY=your-key-here
 ```
 
 ### Running the application
+
+For running the application locally, do this:
 
 First, ingest the knowledge base (see [Ingestion](#ingestion) for details):
 
@@ -70,6 +81,16 @@ or with your own question:
 ```bash
 uv run python natural_remedy_consultant/assistant.py "What herbs may help with nausea?"
 ```
+
+## Preparing the application
+
+Before we use the app, we need to initialize the database.
+
+We can do it by running the [`db_init.py`](natural_remedy_consultant/db_init.py) script
+
+## Using the application
+
+First, you need to start the application either with docker-compose or locally.
 
 ## Interface
 
