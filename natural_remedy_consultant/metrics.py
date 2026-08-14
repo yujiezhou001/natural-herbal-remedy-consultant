@@ -34,21 +34,17 @@ class RAGWithMetrics(RAGBase):
         super().__init__(*args, **kwargs)
         self.last_call: LLMCallRecord = None
 
-    def llm(self, prompt):
+    def llm(self, prompt, history=None):
         start_time = time.time()
-        response = self._call_llm(prompt)
+        response = self._call_llm(prompt, history)
         response_time = time.time() - start_time
         self._log_response(prompt, response, response_time)
         return response.output_text
 
-    def _call_llm(self, prompt):
-        input_messages = [
-            {"role": "developer", "content": self.instructions},
-            {"role": "user", "content": prompt}
-        ]
+    def _call_llm(self, prompt, history=None):
         response = self.llm_client.responses.create(
             model=self.model,
-            input=input_messages
+            input=self.build_messages(prompt, history)
         )
         return response
 
