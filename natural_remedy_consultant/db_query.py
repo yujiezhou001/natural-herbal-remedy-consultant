@@ -14,16 +14,16 @@ class Stats:
 
 def row_to_record(row):
     return LLMCallRecord(
-        model=row[4],
-        prompt=row[6],
-        instructions=row[5],
+        model=row[3],
+        prompt=row[5],
+        instructions=row[4],
         answer=row[2],
-        prompt_tokens=row[7],
-        completion_tokens=row[8],
-        total_tokens=row[9],
-        response_time=row[10],
-        cost=row[11],
-        timestamp=row[12],
+        prompt_tokens=row[6],
+        completion_tokens=row[7],
+        total_tokens=row[8],
+        response_time=row[9],
+        cost=row[10],
+        timestamp=row[11],
     )
 
 def get_conversations(limit=10):
@@ -32,7 +32,7 @@ def get_conversations(limit=10):
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, question, answer, course, model,
+                SELECT id, question, answer, model,
                        instructions, prompt,
                        prompt_tokens, completion_tokens, total_tokens,
                        response_time, cost, timestamp
