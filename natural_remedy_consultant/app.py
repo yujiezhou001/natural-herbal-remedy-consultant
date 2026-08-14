@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import pandas as pd
 import streamlit as st
 
 from assistant import create_assistant
@@ -8,11 +11,44 @@ from judge import evaluate_relevance
 st.set_page_config(page_title="Natural Remedy Consultant", page_icon="🌿")
 
 RELEVANCE_ICON = {"RELEVANT": "🟢", "PARTLY_RELEVANT": "🟡", "NON_RELEVANT": "🔴"}
+IMAGES_CSV = Path(__file__).resolve().parents[1] / "data" / "herb_images.csv"
+MAX_HERB_IMAGES = 3
 
 
 @st.cache_resource
 def get_assistant():
     return create_assistant()
+
+
+@st.cache_data
+def get_herb_images():
+    if not IMAGES_CSV.exists():
+        return {}
+    df = pd.read_csv(IMAGES_CSV)
+    return {
+        row.herb_id: {
+            "name": row.herb_name_en,
+            "image_url": row.image_url,
+            "page_url": row.page_url,
+        }
+        for row in df.itertuples(index=False)
+    }
+
+
+def herbs_for_results(search_results):
+    """Pick up to MAX_HERB_IMAGES distinct pictured herbs, in retrieval order."""
+    herb_images = get_herb_images()
+    herbs = []
+    seen = set()
+    for doc in search_results:
+        herb_id = doc["herb_id"]
+        if herb_id in seen or herb_id not in herb_images:
+            continue
+        seen.add(herb_id)
+        herbs.append(herb_images[herb_id])
+        if len(herbs) == MAX_HERB_IMAGES:
+            break
+    return herbs
 
 
 assistant = get_assistant()
@@ -52,6 +88,12 @@ for i, msg in enumerate(st.session_state.messages):
         st.write(msg["content"])
 
         if msg["role"] == "assistant":
+            if msg.get("herbs"):
+                cols = st.columns(MAX_HERB_IMAGES)
+                for col, herb in zip(cols, msg["herbs"]):
+                    col.image(herb["image_url"], width=140)
+                    col.caption(f"[{herb['name']}]({herb['page_url']})")
+
             st.caption(metrics_caption(msg["metrics"]))
 
             ev = msg.get("evaluation")
@@ -86,6 +128,7 @@ if question := st.chat_input("Ask about a herb or a health concern…"):
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer,
+        "herbs": herbs_for_results(assistant.last_results),
         "conversation_id": conversation_id,
         "metrics": {
             "response_time": record.response_time,

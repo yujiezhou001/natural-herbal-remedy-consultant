@@ -62,6 +62,7 @@ class RAGBase:
         self.record_type = record_type
         self.prompt_template = prompt_template
         self.model = model
+        self.last_results = []
 
     def search(self, query, num_results=5):
         # The index is a HybridSearcher (text + vector search with RRF),
@@ -181,6 +182,7 @@ class RAGBase:
 
     def rag(self, query):
         search_results = self.search(query)
+        self.last_results = search_results
         prompt = self.build_prompt(query, search_results)
         answer = self.llm(prompt)
 
