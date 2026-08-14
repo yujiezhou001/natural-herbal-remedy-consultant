@@ -45,7 +45,10 @@ def herbs_for_results(search_results):
         if herb_id in seen or herb_id not in herb_images:
             continue
         seen.add(herb_id)
-        herbs.append(herb_images[herb_id])
+        herbs.append({
+            **herb_images[herb_id],
+            "name_zh": doc.get("herb_name_zh", ""),
+        })
         if len(herbs) == MAX_HERB_IMAGES:
             break
     return herbs
@@ -92,7 +95,10 @@ for i, msg in enumerate(st.session_state.messages):
                 cols = st.columns(MAX_HERB_IMAGES)
                 for col, herb in zip(cols, msg["herbs"]):
                     col.image(herb["image_url"], width=140)
-                    col.caption(f"[{herb['name']}]({herb['page_url']})")
+                    label = f"[{herb['name']}]({herb['page_url']})"
+                    if herb.get("name_zh"):
+                        label += f" · {herb['name_zh']}"
+                    col.caption(label)
 
             st.caption(metrics_caption(msg["metrics"]))
 

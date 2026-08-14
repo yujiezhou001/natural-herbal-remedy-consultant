@@ -34,6 +34,10 @@ Important rules:
     "dataset", "records", "context", or "the provided information" in your
     answer — just state the information directly.
 14. Keep the answer understandable and do not overstate weak or limited evidence.
+15. The first time you mention an herb, always include its Chinese name in
+    characters and its pinyin right after the English name when they are
+    available in the reference information, for example:
+    "ginger (生姜, Sheng Jiang)".
 '''
 
 
