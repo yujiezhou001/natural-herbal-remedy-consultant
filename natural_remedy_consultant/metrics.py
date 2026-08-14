@@ -67,6 +67,4 @@ class RAGWithMetrics(RAGBase):
             response_time=response_time,
             cost=cost,
         )
-    
-        print(call_record)
         self.last_call = call_record

@@ -1,4 +1,4 @@
-.PHONY: run ingest chat network postgres db-init query dashboard grafana
+.PHONY: run ingest chat network postgres db-init query grafana
 
 run:
 	uv run python natural_remedy_consultant/assistant.py
@@ -28,10 +28,6 @@ db-init:
 
 query:
 	cd natural_remedy_consultant && uv run python db_query.py
-
-dashboard:
-	lsof -ti :8502 | xargs -r kill -9 || true
-	uv run streamlit run natural_remedy_consultant/dashboard.py --server.port 8502
 
 grafana: network
 	docker start grafana 2>/dev/null || docker run -d \
