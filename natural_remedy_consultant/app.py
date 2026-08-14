@@ -21,10 +21,21 @@ st.caption(
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
+def metrics_caption(m):
+    return (
+        f"⏱ {m['response_time']:.2f}s · "
+        f"🔢 {m['prompt_tokens']} prompt + {m['completion_tokens']} completion tokens · "
+        f"💲 ${m['cost']:.4f}"
+    )
+
+
 # replay the conversation so far
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
+        if msg["role"] == "assistant" and "metrics" in msg:
+            st.caption(metrics_caption(msg["metrics"]))
 
 # input pinned to the bottom
 if question := st.chat_input("Ask about a herb or a health concern…"):
@@ -36,7 +47,21 @@ if question := st.chat_input("Ask about a herb or a health concern…"):
         with st.spinner("Consulting the knowledge base…"):
             answer = assistant.rag(question)
         st.write(answer)
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+
+        record = assistant.last_call
+        metrics = {
+            "response_time": record.response_time,
+            "prompt_tokens": record.prompt_tokens,
+            "completion_tokens": record.completion_tokens,
+            "cost": record.cost,
+        }
+        st.caption(metrics_caption(metrics))
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": answer,
+        "metrics": metrics,
+    })
 
 # from db_save import save_conversation
 # from db_feedback import save_feedback

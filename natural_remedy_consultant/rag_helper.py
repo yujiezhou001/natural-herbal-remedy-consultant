@@ -31,6 +31,7 @@ Important rules:
 13. Respond in a friendly, professional and human tone, don't include terms like
     "dataset" or "records" in your answer.
 14. Keep the answer understandable and do not overstate weak or limited evidence.
+15. Do not show the source record, ie. [REC-0001] [REC-0005] etc. in our answer.
 '''
 
 
