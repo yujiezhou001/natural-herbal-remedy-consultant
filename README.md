@@ -1,6 +1,6 @@
 # Natural Herbal Remedy Consultant
 
-This is a natural remedy consultant with knowledge from Chinese traditional herb bible HuangDiNeiJing, built as an RAG application for the LLM zoomcamp project
+This is a natural remedy consultant with knowledge from the Chinese traditional herb bible HuangDiNeiJing, built as a RAG application for the LLM Zoomcamp project.
 
 ## Problem Description
 
@@ -16,6 +16,11 @@ The assistant is intended for educational and research purposes and not as a rep
 * all-MiniLM-L6-v2 (ONNX, run locally) - for embedding the records and queries used by vector search
 * OpenAI as an LLM
 * Streamlit as the web interface (see [Background](#background) for more information)
+* [Prefect](https://www.prefect.io/) - for the automated ingestion pipeline
+* PostgreSQL - for storing conversations and feedback
+* [Grafana](https://grafana.com/) - for the monitoring dashboard
+* [hyperopt](https://hyperopt.github.io/hyperopt/) - for tuning retrieval parameters
+* Docker and Docker Compose - for containerization
 
 ## Running it with Docker
 
@@ -116,6 +121,14 @@ The application has two interfaces:
 - **Web UI (Streamlit)** — a chat interface for interactive use ([natural_remedy_consultant/app.py](natural_remedy_consultant/app.py)), started with `make chat`. You ask questions in natural language and get answers grounded in the knowledge base. The conversation history is kept for the browser session, and the knowledge-base index is built once at startup and cached across interactions.
 - **Command line** — one-off questions through [natural_remedy_consultant/assistant.py](natural_remedy_consultant/assistant.py), run with `make run`. Useful for quick checks and scripting.
 
+The start screen, with the session and monitoring sidebar:
+
+![The app start screen](images/app_start.png)
+
+An answered question — grounded answer with Chinese herb names, photos of the herbs the answer is based on, feedback buttons, and live per-answer metrics with an LLM judge verdict in the sidebar:
+
+![A conversation in the app](images/app_conversation.png)
+
 ## Retrieval Flow
 
 For the code of the Retrieval flow, you can check the [notebooks/consultant.py](notebooks/consultant.py).
@@ -128,7 +141,7 @@ The application uses **hybrid search** (text search + vector search fused with R
 
 For the code for evaluating the system, you can check the [notebooks/notebook.ipynb](notebooks/notebook.ipynb)
 
-### Retreival
+### Retrieval
 
 - using minsearch without any boosting - gave the following metrics:
 
@@ -153,7 +166,7 @@ We used the LLM-as-a-judge metric to evaluate the quality of our RAG flow.
 
 We chose to use our best-performing retrieval approach concluded from retrieval evaluation, which is Hybrid Search for RAG.
 
-Since we have over 2000 records, running all of them is quite costly, so we decided to sample 200 questions and tested on two models: gpt-5.4-mini and gpt-5.4-nano.
+Since we have 2,500 ground-truth questions, running all of them is quite costly, so we sampled 200 test questions and evaluated two models with a fixed LLM judge: gpt-5.4-mini and gpt-5.4-nano.
 
 For gpt-5.4-mini, among 200 records, we had:
 
@@ -192,11 +205,27 @@ The dashboard is defined as code in [grafana/init_grafana.py](grafana/init_grafa
 - **Donut charts**: LLM judge verdicts (relevant / partly relevant / non-relevant) and user feedback (thumbs up/down)
 - **Table**: recent conversations with judge verdict, response time, and cost
 
+![The Grafana monitoring dashboard](images/grafana_dashboard.png)
+
+> **Note for reviewers:** the dashboard *definition* ships with the repo (it is created by the init script above, and persists in the Grafana volume afterwards), but the *data* does not — a fresh database starts empty. After starting the stack, run the init script once, then ask a few questions in the app and click 👍/👎 on some answers — the panels will fill up as you interact.
+
 ## Best Practices
 
 * **Hybrid search** — the application combines text search and vector search over the knowledge base. Both approaches are evaluated separately and combined in the retrieval evaluation ([notebooks/notebook.ipynb](notebooks/notebook.ipynb)), and hybrid search won.
 * **Document re-ranking** — the results from text search and vector search are re-ranked into a single list with Reciprocal Rank Fusion (RRF); see `HybridSearcher` in [natural_remedy_consultant/ingest.py](natural_remedy_consultant/ingest.py).
 * **User query rewriting** — in the chat interface, follow-up questions ("is it safe for children?") are rewritten into standalone questions using the conversation history before retrieval; see `condense_question` in [natural_remedy_consultant/rag_helper.py](natural_remedy_consultant/rag_helper.py).
+
+## Extra Features
+
+Beyond the rubric requirements, the application includes:
+
+* **Conversation memory** — the chat handles follow-up questions: recent history is passed to the answering model, and retrieval uses the rewritten standalone question, so "is it safe for children?" after a chamomile question retrieves chamomile records.
+* **Herb photos in answers** — every answer shows pictures of the herbs it is grounded in, with links to their Wikipedia pages. A batch script ([natural_remedy_consultant/fetch_herb_images.py](natural_remedy_consultant/fetch_herb_images.py)) fetches thumbnails for all 100 herbs via the MediaWiki batch API into a sidecar file (`data/herb_images.csv`) that has no effect on retrieval or evaluation.
+* **Bilingual herb names** — herbs are always introduced with their Chinese characters and pinyin alongside the English name, e.g. "ginger (生姜, Sheng Jiang)", both in the answer text and in the photo captions.
+* **Online LLM-as-a-judge** — every production answer (not just the offline evaluation) is automatically judged for relevance; the verdict is shown live in the app sidebar and stored in Postgres for the dashboard.
+* **Live in-app monitoring** — the sidebar shows the latest answer's response time, token usage, cost, and judge verdict, plus running session totals.
+* **Dashboard as code** — the entire Grafana setup (datasource + 11-panel dashboard) is reproducible from one idempotent script.
+* **Safety-first prompting** — the assistant never generates doses, separates traditional use from modern evidence, surfaces contraindications and drug interactions, and recommends professional care for high-risk situations.
 
 ## Background
 
