@@ -4,11 +4,9 @@ This is a natural remedy consultant with knowledge from the Chinese traditional 
 
 Ask a question about herbs or everyday health concerns and get a grounded, safety-first answer — with photos of the herbs, bilingual names, and live quality monitoring:
 
-![A conversation in the app](images/app_conversation.png)
-
-The start screen, with the session and monitoring sidebar:
-
 ![The app start screen](images/app_start.png)
+
+![A conversation in the app](images/app_conversation.png)
 
 ## Problem Description
 
