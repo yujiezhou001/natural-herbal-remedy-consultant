@@ -143,40 +143,41 @@ For the code for evaluating the system, you can check the [notebooks/notebook.ip
 
 ### Retrieval
 
-- using minsearch without any boosting - gave the following metrics:
+We evaluated retrieval with **hit rate** and **MRR** against 2,500 LLM-generated ground-truth questions (5 per knowledge-base record).
 
-text {'hit_rate': 0.944, 'mrr': 0.5907800000000012}
-vector {'hit_rate': 0.9172, 'mrr': 0.6094866666666657}
-hybrid {'hit_rate': 0.9648, 'mrr': 0.6329333333333339}
+The basic approaches, evaluated on all 2,500 questions:
 
-- using minsearch and hyperopt with boosting - gave the following metrics:
+| Approach | Hit rate | MRR |
+|---|---:|---:|
+| Text search | 0.944 | 0.591 |
+| Vector search | 0.917 | 0.609 |
+| **Hybrid search (RRF)** | **0.965** | **0.633** |
 
-text (untuned)     {'hit_rate': 0.9420833333333334, 'mrr': 0.5909375000000011}
-text (boosted)     {'hit_rate': 0.9454166666666667, 'mrr': 0.6158125000000004}
-vector             {'hit_rate': 0.915, 'mrr': 0.606145833333333}
-hybrid (default)   {'hit_rate': 0.9633333333333334, 'mrr': 0.6305208333333339}
-hybrid (tuned)     {'hit_rate': 0.9458333333333333, 'mrr': 0.6322638888888894}
+We then tuned search parameters with hyperopt on a 100-question validation split (per-field boost weights for text search, and the RRF fusion parameters for hybrid search) and compared all approaches on the held-out 2,400-question test split:
 
-The hybrid search wins with or without boosting.
+| Approach | Hit rate | MRR |
+|---|---:|---:|
+| Text search (untuned) | 0.942 | 0.591 |
+| Text search (boosted) | 0.945 | 0.616 |
+| Vector search | 0.915 | 0.606 |
+| **Hybrid search (default)** | **0.963** | 0.631 |
+| Hybrid search (tuned) | 0.946 | **0.632** |
+
+Hybrid search wins with or without boosting. **The application uses hybrid search with default parameters** — it has the best hit rate, which matters most for RAG, since all top-5 retrieved records go into the LLM context.
 
 
 ### RAG Flow
 
-We used the LLM-as-a-judge metric to evaluate the quality of our RAG flow.
+We used LLM-as-a-judge to evaluate the quality of the full RAG flow, built on our best-performing retriever (hybrid search).
 
-We chose to use our best-performing retrieval approach concluded from retrieval evaluation, which is Hybrid Search for RAG.
+Since running all 2,500 ground-truth questions is costly, we sampled 200 test questions and compared two answering models with a fixed judge model (gpt-5.4-mini). The judge checks each answer against the source record the question was generated from.
 
-Since we have 2,500 ground-truth questions, running all of them is quite costly, so we sampled 200 test questions and evaluated two models with a fixed LLM judge: gpt-5.4-mini and gpt-5.4-nano.
+| Answering model | Good | Bad |
+|---|---:|---:|
+| **gpt-5.4-mini** | **195 (97.5%)** | 5 (2.5%) |
+| gpt-5.4-nano | 193 (96.5%) | 7 (3.5%) |
 
-For gpt-5.4-mini, among 200 records, we had:
-
-195 (97.50%) Good
-5   (2.5%)   Bad
-
-For gpt-5.4-nano, among 200 records, we had:
-
-193 (96.50%) Good
-7   (3.5%)   Bad
+gpt-5.4-mini wins — **it is the model used in the application**.
 
 ## Monitoring
 
@@ -219,6 +220,7 @@ The dashboard is defined as code in [grafana/init_grafana.py](grafana/init_grafa
 
 Beyond the rubric requirements, the application includes:
 
+* **Retrieval parameter tuning** — search parameters (per-field boost weights for text search, and the RRF fusion parameters `k` / `num_candidates` for hybrid search) are tuned with [hyperopt](https://hyperopt.github.io/hyperopt/) on a validation split and verified on a held-out test split; see [Retrieval](#retrieval) and [notebooks/notebook.ipynb](notebooks/notebook.ipynb).
 * **Conversation memory** — the chat handles follow-up questions: recent history is passed to the answering model, and retrieval uses the rewritten standalone question, so "is it safe for children?" after a chamomile question retrieves chamomile records.
 * **Herb photos in answers** — every answer shows pictures of the herbs it is grounded in, with links to their Wikipedia pages. A batch script ([natural_remedy_consultant/fetch_herb_images.py](natural_remedy_consultant/fetch_herb_images.py)) fetches thumbnails for all 100 herbs via the MediaWiki batch API into a sidecar file (`data/herb_images.csv`) that has no effect on retrieval or evaluation.
 * **Bilingual herb names** — herbs are always introduced with their Chinese characters and pinyin alongside the English name, e.g. "ginger (生姜, Sheng Jiang)", both in the answer text and in the photo captions.
