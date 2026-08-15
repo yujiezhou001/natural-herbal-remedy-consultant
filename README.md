@@ -133,11 +133,14 @@ The chat also supports **follow-up questions** — here, "Is it safe for childre
 
 ## Retrieval Flow
 
-For the code of the Retrieval flow, you can check the [notebooks/consultant.py](notebooks/consultant.py).
+For the code of the retrieval flow, check [notebooks/consultant.py](notebooks/consultant.py) — a minimal end-to-end version of the flow: user question → knowledge-base search → retrieved records built into a prompt → grounded LLM answer.
 
-The packaged application version lives in [natural_remedy_consultant/assistant.py](natural_remedy_consultant/assistant.py) (the app is built on top of it) — run it with the 'make run' command directly in the terminal.
+It is built from two helper modules in the same folder:
 
-The application uses **hybrid search** (text search + vector search fused with Reciprocal Rank Fusion), the best-performing retriever from our retrieval evaluation — see [natural_remedy_consultant/ingest.py](natural_remedy_consultant/ingest.py). The app's retriever scores the same as the notebook winner on the ground-truth test set: hit_rate 0.963, MRR 0.631.
+1. [notebooks/ingest.py](notebooks/ingest.py) — loads the knowledge base and builds the minsearch index over its text fields
+2. [notebooks/rag_helper.py](notebooks/rag_helper.py) — `RAGBase`, which orchestrates the flow: search the index, build the context and prompt from the retrieved records, and generate the answer with the LLM under safety-first instructions
+
+The different retrieval approaches — text, vector, and hybrid search, with [notebooks/embedder.py](notebooks/embedder.py) providing the embeddings — are evaluated in [notebooks/notebook.ipynb](notebooks/notebook.ipynb); see [Evaluation](#evaluation).
 
 ## Evaluation
 
