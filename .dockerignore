@@ -1,0 +1,9 @@
+.venv
+.git
+.uv-cache
+.env
+.claude
+notebooks
+grafana
+natural_remedy_consultant/models
+**/__pycache__

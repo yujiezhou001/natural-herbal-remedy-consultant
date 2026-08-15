@@ -1,9 +1,11 @@
+import time
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from assistant import create_assistant
+from db_init import init_db
 from db_save import save_conversation
 from db_feedback import save_feedback
 from judge import evaluate_relevance
@@ -93,6 +95,17 @@ APP_CSS = """
 
 @st.cache_resource
 def get_assistant():
+    # create the tables if they don't exist yet, retrying while
+    # the database container finishes starting up
+    for attempt in range(5):
+        try:
+            init_db()
+            break
+        except Exception:
+            if attempt == 4:
+                raise
+            time.sleep(2)
+
     return create_assistant()
 
 

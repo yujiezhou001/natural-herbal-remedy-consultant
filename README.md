@@ -19,10 +19,17 @@ The assistant is intended for educational and research purposes and not as a rep
 
 ## Running it with Docker
 
-The easiest way to run this application is with docker
+The easiest way to run this application is with docker. The whole stack — the Streamlit app ([Dockerfile](Dockerfile)), Postgres, and Grafana — is defined in [docker-compose.yaml](docker-compose.yaml).
+
+First create the `.env` file (see [Configuration](#configuration) — the `POSTGRES_*` defaults work as-is, you only need your OpenAI key), then:
+
 ```bash
-docker-compose up
+docker compose up --build
 ```
+
+Then open the app at http://localhost:8501. The first startup downloads the ~90 MB embedding model and builds the search index, so give it a minute. Database tables are created automatically on startup.
+
+Grafana runs at http://localhost:3000 (login `admin` / `admin`) — see [Monitoring](#monitoring) for creating the dashboard.
 
 ## Running Locally
 
@@ -50,7 +57,13 @@ The application uses OpenAI as the LLM provider. Put your API key in a `.env` fi
 
 ```
 OPENAI_API_KEY=your-key-here
+POSTGRES_DB=natural_remedy_assistant
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_HOST=localhost
 ```
+
+The same file is used by Docker Compose (for the containers) and by the local run.
 
 ### Running the application
 
@@ -84,13 +97,17 @@ uv run python natural_remedy_consultant/assistant.py "What herbs may help with n
 
 ## Preparing the application
 
-Before we use the app, we need to initialize the database.
+The database tables are created automatically when the app starts (see [`db_init.py`](natural_remedy_consultant/db_init.py) — the initialization is idempotent). If you run locally with `make chat`, start the database first:
 
-We can do it by running the [`db_init.py`](natural_remedy_consultant/db_init.py) script
+```bash
+make postgres
+```
+
+You can also initialize the tables manually with `make db-init`.
 
 ## Using the application
 
-First, you need to start the application either with docker-compose or locally.
+Start the application either with docker compose or locally, open http://localhost:8501, and ask questions in the chat. Each answer shows pictures of the herbs it is based on, and you can rate answers with 👍/👎 — both the conversations and your feedback are stored in Postgres and feed the monitoring dashboard.
 
 ## Interface
 
@@ -149,6 +166,37 @@ For gpt-5.4-nano, among 200 records, we had:
 7   (3.5%)   Bad
 
 ## Monitoring
+
+We monitor the application with [Grafana](https://grafana.com/), reading directly from the Postgres database where the app stores every conversation (question, answer, tokens, response time, cost) and every feedback event (LLM judge verdicts and user thumbs).
+
+If you run with **docker compose**, Postgres and Grafana are already up — create the datasource and dashboard with:
+
+```bash
+uv run python grafana/init_grafana.py
+```
+
+If you run **locally with make**, start the stack and initialize it:
+
+```bash
+make postgres      # database (skip if already running)
+make grafana       # Grafana on http://localhost:3000
+make grafana-init  # creates the datasource and dashboard via the Grafana API
+```
+
+Then open http://localhost:3000 (default login `admin` / `admin`) and go to the **Natural Remedy Consultant — Monitoring** dashboard.
+
+The dashboard is defined as code in [grafana/init_grafana.py](grafana/init_grafana.py) (idempotent — safe to re-run) and contains 11 panels:
+
+- **Stat tiles**: total questions, total cost, average response time, and the share of answers the LLM judge rated relevant
+- **Time series**: questions over time, response time (avg/max), cost over time, and token usage (prompt vs completion)
+- **Donut charts**: LLM judge verdicts (relevant / partly relevant / non-relevant) and user feedback (thumbs up/down)
+- **Table**: recent conversations with judge verdict, response time, and cost
+
+## Best Practices
+
+* **Hybrid search** — the application combines text search and vector search over the knowledge base. Both approaches are evaluated separately and combined in the retrieval evaluation ([notebooks/notebook.ipynb](notebooks/notebook.ipynb)), and hybrid search won.
+* **Document re-ranking** — the results from text search and vector search are re-ranked into a single list with Reciprocal Rank Fusion (RRF); see `HybridSearcher` in [natural_remedy_consultant/ingest.py](natural_remedy_consultant/ingest.py).
+* **User query rewriting** — in the chat interface, follow-up questions ("is it safe for children?") are rewritten into standalone questions using the conversation history before retrieval; see `condense_question` in [natural_remedy_consultant/rag_helper.py](natural_remedy_consultant/rag_helper.py).
 
 ## Background
 

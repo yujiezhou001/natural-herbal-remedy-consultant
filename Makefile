@@ -1,4 +1,4 @@
-.PHONY: run ingest chat network postgres db-init query grafana
+.PHONY: run ingest chat network postgres db-init query grafana grafana-init
 
 run:
 	uv run python natural_remedy_consultant/assistant.py
@@ -36,3 +36,6 @@ grafana: network
 		-p 3000:3000 \
 		-v grafana_data:/var/lib/grafana \
 		grafana/grafana
+
+grafana-init:
+	GRAFANA_PG_HOST=natural-remedy-assistant-pg:5432 uv run python grafana/init_grafana.py
