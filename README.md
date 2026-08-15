@@ -2,6 +2,10 @@
 
 This is a natural remedy consultant with knowledge from the Chinese traditional herb bible HuangDiNeiJing, built as a RAG application for the LLM Zoomcamp project.
 
+Ask a question about herbs or everyday health concerns and get a grounded, safety-first answer — with photos of the herbs, bilingual names, and live quality monitoring:
+
+![A conversation in the app](images/app_conversation.png)
+
 ## Problem Description
 
 Information about natural remedies is often scattered across traditional medical texts, herbal references, modern research, and safety resources. This makes it difficult to quickly answer practical questions such as what natural remedies may help with sleep, a common cold, nausea, or other everyday concerns, while also understanding their traditional uses, modern scientific evidence, preparation methods, side effects, and drug interactions.
@@ -125,9 +129,7 @@ The start screen, with the session and monitoring sidebar:
 
 ![The app start screen](images/app_start.png)
 
-An answered question — grounded answer with Chinese herb names, photos of the herbs the answer is based on, feedback buttons, and live per-answer metrics with an LLM judge verdict in the sidebar:
-
-![A conversation in the app](images/app_conversation.png)
+An answered question shows the grounded answer with Chinese herb names, photos of the herbs the answer is based on, feedback buttons, and live per-answer metrics with an LLM judge verdict in the sidebar — see the screenshot at the [top of this README](#natural-herbal-remedy-consultant).
 
 ## Retrieval Flow
 
