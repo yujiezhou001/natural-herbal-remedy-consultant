@@ -6,6 +6,10 @@ Ask a question about herbs or everyday health concerns and get a grounded, safet
 
 ![A conversation in the app](images/app_conversation.png)
 
+The start screen, with the session and monitoring sidebar:
+
+![The app start screen](images/app_start.png)
+
 ## Problem Description
 
 Information about natural remedies is often scattered across traditional medical texts, herbal references, modern research, and safety resources. This makes it difficult to quickly answer practical questions such as what natural remedies may help with sleep, a common cold, nausea, or other everyday concerns, while also understanding their traditional uses, modern scientific evidence, preparation methods, side effects, and drug interactions.
@@ -125,11 +129,9 @@ The application has two interfaces:
 - **Web UI (Streamlit)** — a chat interface for interactive use ([natural_remedy_consultant/app.py](natural_remedy_consultant/app.py)), started with `make chat`. You ask questions in natural language and get answers grounded in the knowledge base. The conversation history is kept for the browser session, and the knowledge-base index is built once at startup and cached across interactions.
 - **Command line** — one-off questions through [natural_remedy_consultant/assistant.py](natural_remedy_consultant/assistant.py), run with `make run`. Useful for quick checks and scripting.
 
-The start screen, with the session and monitoring sidebar:
+The chat also supports **follow-up questions** — here, "Is it safe for children?" is understood to be about the chamomile discussed just before, and the assistant is explicit about what the knowledge base does and does not cover:
 
-![The app start screen](images/app_start.png)
-
-An answered question shows the grounded answer with Chinese herb names, photos of the herbs the answer is based on, feedback buttons, and live per-answer metrics with an LLM judge verdict in the sidebar — see the screenshot at the [top of this README](#natural-herbal-remedy-consultant).
+![A follow-up question in the app](images/app_followup.png)
 
 ## Retrieval Flow
 
